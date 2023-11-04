@@ -4,54 +4,11 @@ class Program
 {
     static void Main(string[] args)
     {
-        Baraja baraja = new Baraja();
-        baraja.Barajar();
-        int contadorCartas = baraja.ContarCartas();
-        Crupier crupier = new Crupier("Crupier");
-        crupier.Jugar(baraja);
-
         Console.Write("Ingrese el nombre del jugador: ");
         string nombreJugador = Console.ReadLine();
 
-        JugadorBlackjack jugador = new JugadorBlackjack(nombreJugador);
-
-        // Repartir dos cartas iniciales al jugador después de barajar la baraja
-        Baraja.RepartirCarta(jugador, baraja);
-        Baraja.RepartirCarta(jugador, baraja);
-
-        Console.WriteLine("Cartas del jugador:");
-        jugador.mostrarCartas();
-
-        while (true)
-        {
-            Console.WriteLine($"Puntuación del jugador: {jugador.CalcularPuntuacion()}");
-
-            if (jugador.CalcularPuntuacion() > 21)
-            {
-                Console.WriteLine($"El jugador {jugador.nombre} ha perdido.");
-                break;
-            }else if (jugador.CalcularPuntuacion() == 21)
-            {
-                Console.WriteLine($"Felicidades {jugador.nombre}, has ganado.");
-                break;
-            }
-
-            Console.Write("¿Desea robar otra carta? (S/N): ");
-            string respuesta = Console.ReadLine().Trim();
-
-            if (respuesta.Equals("S", StringComparison.OrdinalIgnoreCase))
-            {
-                Baraja.RepartirCarta(jugador, baraja); // Repartir una nueva carta después de barajar
-                Console.WriteLine("Cartas del jugador:");
-                jugador.mostrarCartas();
-                --contadorCartas;
-                
-            }
-            else if (respuesta.Equals("N", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
-        }
+        BlackJackGame juego = new BlackJackGame(nombreJugador);
+        juego.Jugar();
 
         Console.WriteLine("Fin del juego.");
     }
@@ -240,4 +197,119 @@ public class Crupier : JugadorBlackjack
         }
     }
 }
+public class BlackJackGame
+{
+    private JugadorBlackjack jugador1;
+    private Crupier crupier;
+    private Baraja baraja;
+
+    public BlackJackGame(string nombreJugador)
+    {
+        jugador1 = new JugadorBlackjack(nombreJugador);
+        crupier = new Crupier("Crupier");
+        baraja = new Baraja();
+        baraja.Barajar();
+    }
+
+    public int DiferenciaHasta21(JugadorBlackjack jugador)
+    {
+        int puntosJugador = jugador.CalcularPuntuacion();
+        return Math.Max(0, 21 - puntosJugador);
+    }
+
+    public int PuntosJugador(JugadorBlackjack jugador)
+    {
+        return jugador.CalcularPuntuacion();
+    }
+
+    public int PuntosCrupier()
+    {
+        return crupier.CalcularPuntuacion();
+    }
+
+    public string DeterminarResultado()
+    {
+        int puntosJugador = PuntosJugador(jugador1);
+        int puntosCrupier = PuntosCrupier();
+
+        if (puntosJugador > 21)
+        {
+            return $"El jugador {jugador1.nombre} ha perdido.";
+        }
+        else if (puntosCrupier > 21)
+        {
+            return $"El crupier ha perdido. ¡{jugador1.nombre} ha ganado!";
+        }
+        else if (puntosJugador > puntosCrupier)
+        {
+            return $"{jugador1.nombre} ha ganado.";
+        }
+        else if (puntosCrupier > puntosJugador)
+        {
+            return "El crupier ha ganado.";
+        }
+        else
+        {
+            return "Es un empate.";
+        }
+    }
+    public void Jugar()
+    {
+        Baraja.RepartirCarta(jugador1, baraja);
+        Baraja.RepartirCarta(crupier, baraja);
+        Baraja.RepartirCarta(jugador1, baraja);
+        Baraja.RepartirCarta(crupier, baraja);
+
+        while (true)
+        {
+            Console.WriteLine("Cartas del crupier:");
+            crupier.mostrarCartas();
+            Console.WriteLine($"Puntuación del crupier: {PuntosCrupier()}");
+            Console.WriteLine($"El crupier necesita {DiferenciaHasta21(crupier)} puntos para ganar");
+            Console.WriteLine($"Cartas de {jugador1.nombre}:");
+            jugador1.mostrarCartas();
+            Console.WriteLine($"Puntuación de {jugador1.nombre}: {PuntosJugador(jugador1)}");
+            Console.WriteLine($"{jugador1.nombre} necesita {DiferenciaHasta21(jugador1)} puntos para ganar");
+
+            if (PuntosJugador(jugador1) > 21)
+            {
+                Console.WriteLine($"El jugador {jugador1.nombre} ha perdido.");
+                break;
+            }
+
+            Console.Write("¿Desea robar una carta? (S/N): ");
+            string respuesta = Console.ReadLine().Trim();
+
+            if (respuesta.Equals("S", StringComparison.OrdinalIgnoreCase))
+            {
+                Baraja.RepartirCarta(jugador1, baraja);
+            }
+            else if (respuesta.Equals("N", StringComparison.OrdinalIgnoreCase))
+            {
+                if (PuntosCrupier() < 17 && PuntosCrupier() < PuntosJugador(jugador1)) // Crupier roba una última carta si el jugador se planta con más puntos.
+                {
+                    Baraja.RepartirCarta(crupier, baraja);
+                }
+                break;
+            }
+
+            if (PuntosCrupier() >= 17)
+            {
+                break; // El crupier ya tiene al menos 17 puntos, termina el juego.
+            }
+
+            // Turno del crupier
+            Baraja.RepartirCarta(crupier, baraja);
+        }
+
+        Console.WriteLine("Cartas del crupier:");
+        crupier.mostrarCartas();
+        Console.WriteLine($"Puntuación del crupier: {PuntosCrupier()}");
+        Console.WriteLine($"Cartas de {jugador1.nombre}:");
+        jugador1.mostrarCartas();
+        Console.WriteLine($"Puntuación de {jugador1.nombre}: {PuntosJugador(jugador1)}");
+        Console.WriteLine(DeterminarResultado());
+    }
+}
+
 
