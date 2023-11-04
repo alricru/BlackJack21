@@ -7,6 +7,8 @@ class Program
         Baraja baraja = new Baraja();
         baraja.Barajar();
         int contadorCartas = baraja.ContarCartas();
+        Crupier crupier = new Crupier("Crupier");
+        crupier.Jugar(baraja);
 
         Console.Write("Ingrese el nombre del jugador: ");
         string nombreJugador = Console.ReadLine();
@@ -180,7 +182,7 @@ public class JugadorBlackjack : Jugador
         List<Carta> manoJugador = mano;
         foreach (Carta carta in manoJugador)
         {
-            if (carta.Valor == 11) // Valor del As en el blackjack
+            if (carta.Valor == 1) // Valor del As en el blackjack
             {
                 return true;
             }
@@ -195,16 +197,24 @@ public class JugadorBlackjack : Jugador
 
         foreach (Carta carta in mano)
         {
-            if (carta.Valor == 11)
+            if (carta.Valor >= 10)
+            {
+                puntuacion += 10; // Rey, Reina y Jota
+            }
+            else if (carta.Valor == 1) // Valor del As
             {
                 ases++;
+                puntuacion += 1;
             }
-            puntuacion += carta.Valor;
+            else
+            {
+                puntuacion += carta.Valor;
+            }
         }
 
-        while (puntuacion > 21 && ases > 0)
+        while (puntuacion < 12 && ases > 0)
         {
-            puntuacion -= 10; // Si la puntuación supera 21 y hay al menos un As, cambia el valor del As a 1.
+            puntuacion += 10; // Si la puntuación no supera 12 y hay al menos un As, cambia el valor del As a 11.
             ases--;
         }
 
@@ -216,3 +226,18 @@ public class JugadorBlackjack : Jugador
         return CalcularPuntuacion() > 21;
     }
 }
+public class Crupier : JugadorBlackjack
+{
+    public Crupier(string nombre) : base(nombre)
+    {
+    }
+
+    public void Jugar(Baraja baraja)
+    {
+        while (CalcularPuntuacion() < 17)
+        {
+            Baraja.RepartirCarta(this, baraja);
+        }
+    }
+}
+
