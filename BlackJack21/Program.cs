@@ -1,16 +1,29 @@
 ﻿
+using System.Text;
 
 class Program
 {
     static void Main(string[] args)
     {
-        Console.Write("Ingrese el nombre del jugador: ");
+        Console.OutputEncoding = Encoding.UTF8;
+
+        Console.WriteLine("+------------------------------------+");
+        Console.WriteLine("| +-----+ ------------------         |");
+        Console.WriteLine("| |A    | JUEGO: Blackjack 21        |");
+        Console.WriteLine("| |  ♠  | LENGUAJE: C#               |");
+        Console.WriteLine("| |    A| AUTOR: Alejandro Rivero    |");
+        Console.WriteLine("| +-----+ ------------------         |");
+        Console.WriteLine("|         PROGRAMACIÓN Y MOTORES     |");
+        Console.WriteLine("+------------------------------------+");
+
+        Console.Write("ESCRIBA SU NOMBRE: ");
         string nombreJugador = Console.ReadLine();
+        Console.Clear();
 
         BlackJackGame juego = new BlackJackGame(nombreJugador);
         juego.Jugar();
 
-        Console.WriteLine("Fin del juego.");
+        Console.WriteLine("FIN DEL JUEGO.");
     }
 
 }
@@ -19,7 +32,7 @@ class Program
 public enum Palo
 {
     Corazones,
-    Diamantes,
+    Treboles,
     Rombos,
     Picas
 }
@@ -126,7 +139,80 @@ public class Jugador
             Console.WriteLine(cartas.Valor + " " + cartas.Palo);
         }
     }
+    public void DibujarCartas()
+    {
+        foreach (Carta carta in mano)
+        {
+            Console.Write("+-----+");
+        }
+        Console.WriteLine(); 
 
+        foreach (Carta carta in mano)
+        {
+            Console.Write($"|{CartaStr(carta),-4} |");
+        }
+        Console.WriteLine(); 
+
+        foreach (Carta carta in mano)
+        {
+            Console.Write("|  ");
+            Console.Write($"{SimboloStr(carta.Palo)}");
+            Console.Write("  |");
+        }
+        Console.WriteLine(); 
+
+        foreach (Carta carta in mano)
+        {
+            Console.Write($"|   {CartaStr(carta),-2}|");
+        }
+        Console.WriteLine(); 
+
+        foreach (Carta carta in mano)
+        {
+            Console.Write("+-----+");
+        }
+        Console.WriteLine();
+    }
+    public string SimboloStr(Palo palo)
+    {
+        switch (palo)
+        {
+            case Palo.Corazones:
+                return "♥";
+            case Palo.Rombos:
+                return "♦";
+            case Palo.Treboles:
+                return "♣";
+            case Palo.Picas:
+                return "♠";
+            default:
+                return "";
+        }
+    }
+
+    public string CartaStr(Carta carta)
+    {
+        if (carta.Valor >= 2 && carta.Valor <= 10)
+        {
+            return carta.Valor.ToString();
+        }
+        else
+        {
+            switch (carta.Valor)
+            {
+                case 1:
+                    return "A";
+                case 11:
+                    return "J";
+                case 12:
+                    return "Q";
+                case 13:
+                    return "K";
+                default:
+                    return "";
+            }
+        }
+    }
 }
 public class JugadorBlackjack : Jugador
 {
@@ -234,23 +320,27 @@ public class BlackJackGame
 
         if (puntosJugador > 21)
         {
-            return $"El jugador {jugador1.nombre} ha perdido.";
+            return $"{jugador1.nombre} HA PERDIDO.";
         }
         else if (puntosCrupier > 21)
         {
-            return $"El crupier ha perdido. ¡{jugador1.nombre} ha ganado!";
+            return $"EL CRUPIER PIERDE. ¡{jugador1.nombre} HA GANADO!";
+        }
+        else if (puntosJugador == 21)
+        {
+            return $"¡{jugador1.nombre} HA LOGRADO UN BLACKJACK!";
         }
         else if (puntosJugador > puntosCrupier)
         {
-            return $"{jugador1.nombre} ha ganado.";
+            return $"¡{jugador1.nombre} HA GANADO!";
         }
         else if (puntosCrupier > puntosJugador)
         {
-            return "El crupier ha ganado.";
+            return "¡GANA EL CRUPIER!";
         }
         else
         {
-            return "Es un empate.";
+            return "ES UN EMPATE.";
         }
     }
     public void Jugar()
@@ -262,22 +352,26 @@ public class BlackJackGame
 
         while (true)
         {
-            Console.WriteLine("Cartas del crupier:");
-            crupier.mostrarCartas();
-            Console.WriteLine($"Puntuación del crupier: {PuntosCrupier()}");
-            Console.WriteLine($"El crupier necesita {DiferenciaHasta21(crupier)} puntos para ganar");
-            Console.WriteLine($"Cartas de {jugador1.nombre}:");
-            jugador1.mostrarCartas();
-            Console.WriteLine($"Puntuación de {jugador1.nombre}: {PuntosJugador(jugador1)}");
-            Console.WriteLine($"{jugador1.nombre} necesita {DiferenciaHasta21(jugador1)} puntos para ganar");
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine("MANO DEL CRUPIER:");
+            Console.WriteLine("-------------------------------------");
+            crupier.DibujarCartas();
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine($"PUNTUACIÓN DEL CRUPIER: {PuntosCrupier()}");
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine($"EL CRUPIER NECESITA {DiferenciaHasta21(crupier)} PUNTOS PARA GANAR");
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine($"MANO DE {jugador1.nombre}:");
+            Console.WriteLine("-------------------------------------");
+            jugador1.DibujarCartas();
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine($"PUNTUACIÓN DE {jugador1.nombre}: {PuntosJugador(jugador1)}");
+            Console.WriteLine("-------------------------------------");
+            Console.WriteLine($"{jugador1.nombre} NECESITA {DiferenciaHasta21(jugador1)} PUNTOS PARA GANAR");
+            Console.WriteLine("-------------------------------------");
 
-            if (PuntosJugador(jugador1) > 21)
-            {
-                Console.WriteLine($"El jugador {jugador1.nombre} ha perdido.");
-                break;
-            }
 
-            Console.Write("¿Desea robar una carta? (S/N): ");
+            Console.Write("¿QUIERES ROBAR UNA CARTA? (S/N): ");
             string respuesta = Console.ReadLine().Trim();
 
             if (respuesta.Equals("S", StringComparison.OrdinalIgnoreCase))
@@ -293,23 +387,28 @@ public class BlackJackGame
                 break;
             }
 
-            if (PuntosCrupier() >= 17)
+            if (PuntosCrupier() >= 17 || PuntosJugador(jugador1) >= 21)
             {
-                break; // El crupier ya tiene al menos 17 puntos, termina el juego.
+                break; // El crupier ya tiene al menos 17 puntos o el jugador 21 o más, termina el juego.
             }
 
             // Turno del crupier
             Baraja.RepartirCarta(crupier, baraja);
         }
-
-        Console.WriteLine("Cartas del crupier:");
-        crupier.mostrarCartas();
-        Console.WriteLine($"Puntuación del crupier: {PuntosCrupier()}");
-        Console.WriteLine($"Cartas de {jugador1.nombre}:");
-        jugador1.mostrarCartas();
-        Console.WriteLine($"Puntuación de {jugador1.nombre}: {PuntosJugador(jugador1)}");
+        Console.WriteLine("-------------------------------------");
+        Console.WriteLine("MANO DEL CRUPIER:");
+        Console.WriteLine("-------------------------------------");
+        crupier.DibujarCartas();
+        Console.WriteLine("-------------------------------------");
+        Console.WriteLine($"PUNTUACIÓN DEL CRUPIER: {PuntosCrupier()}");
+        Console.WriteLine("-------------------------------------");
+        Console.WriteLine($"MANO DE {jugador1.nombre}:");
+        Console.WriteLine("-------------------------------------");
+        jugador1.DibujarCartas();
+        Console.WriteLine("-------------------------------------");
+        Console.WriteLine($"PUNTUACIÓN DE {jugador1.nombre}: {PuntosJugador(jugador1)}");
+        Console.WriteLine("-------------------------------------");
         Console.WriteLine(DeterminarResultado());
+        Console.WriteLine("-------------------------------------");
     }
 }
-
-
